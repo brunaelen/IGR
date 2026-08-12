@@ -2,8 +2,14 @@
 
 Dashboard desenvolvido em **Power BI** para análise de reclamações de operadoras de planos de saúde, utilizando dados públicos disponibilizados pela **Agência Nacional de Saúde Suplementar (ANS)**.
 
-> ⚠️ **Projeto independente.**
-> Este dashboard não representa uma publicação ou ferramenta oficial da ANS.
+### Cálculo do IGR 
+
+O IGR é calculado a partir da relação entre a média das Demandas NIP classificadas como: _Inativa, NP, RVE, Núcleo_ ou _Em Andamento_ no período analisado e a média de beneficiários de planos de saúde no mesmo período.
+
+
+$$\left( \frac{\text{Média de demandas NIP no período}}{\text{Média de beneficiários no período}} \right)\times 100.000$$
+
+**Fonte:** Ficha Técnica do indicador disponibilizada pela ANS.
 
 ---
 
@@ -84,23 +90,44 @@ Por exemplo, a quantidade de beneficiários pode aparecer repetida em diferentes
 ### Total de Beneficiários 
 
 ```DAX
-Reclamacoes Atual = 
+Total Beneficiários = 
 SUMX(
-    VALUES('IGR'[REGISTRO_OPERADORA]),
+    SUMMARIZE(
+        'IGR',
+        'IGR'[REGISTRO_OPERADORA],
+        'IGR'[COBERTURA],
+        'IGR'[PORTE_OPERADORA]
+    ),
     VAR UltimaCompetencia =
         CALCULATE(
-            MAX('IGR'[COMPETENCIA])
+            MAX('IGR'[COMPETENCIA_BENEFICIARIO])
         )
     RETURN
         CALCULATE(
-            SUM('IGR'[QTD_RECLAMACOES]),
-            'IGR'[COMPETENCIA] = UltimaCompetencia
+            MAX('IGR'[QTD_BENEFICIARIOS]),
+            'IGR'[COMPETENCIA_BENEFICIARIO] = UltimaCompetencia
         )
 )
 ```
+
+## Último IGR registrado na base (por operadora)
+
+```DAX
+Último IGR = 
+VAR UltimaCompetencia =
+    MAX('IGR'[COMPETENCIA])
+RETURN
+    CALCULATE(
+        MAX('IGR'[IGR]),
+        'IGR'[COMPETENCIA] = UltimaCompetencia
+    )
+```
+
 ## 🔗 Links
 
 - [Base de dados](https://dados.gov.br/dados/conjuntos-dados/indice-geral-de-reclamacoes---igr--metodologia-a-partir-de-2023)
 - [Meu portfólio](https://brunaelen.github.io/portfolio/)
 - [LinkedIn](www.linkedin.com/in/bruna-nascimento-dt-science)
-- [Arquivo Power BI](./dashboard.pbix)
+
+> ⚠️ **Projeto independente!**
+> Este dashboard não representa uma publicação ou ferramenta oficial da ANS.
